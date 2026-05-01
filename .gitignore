@@ -26,3 +26,17 @@ Thumbs.db
 dist/
 build/
 *.egg-info/
+
+# Logs
+app.log
+*.log
+
+# Database files
+data/*.db
+
+# Node
+node_modules/
+travel-ai-frontend/dist/
+
+# Test
+test_redis.py

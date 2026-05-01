@@ -38,7 +38,8 @@ class Conversation(Base):
     response = Column(Text)
     intent = Column(String(100))
     confidence = Column(Float)
-    metadata = Column(JSON, default={})
+    # 将 metadata 改为 meta_data
+    meta_data = Column(JSON, default={})
     created_at = Column(DateTime, default=func.now())
     
     # 关系
@@ -71,18 +72,42 @@ class KnowledgeBase(Base):
     category = Column(String(100), index=True)
     title = Column(String(200))
     content = Column(Text)
-    metadata = Column(JSON, default={})
+    meta_data = Column(JSON, default={})
     source = Column(String(200))
     embedding = Column(Text)  # 存储向量嵌入
     created_at = Column(DateTime, default=func.now())
 
 # 创建数据库引擎
 def get_db_engine():
-    connection_string = (
-        f"mysql+mysqlconnector://{settings.MYSQL_USER}:{settings.MYSQL_PASSWORD}"
-        f"@{settings.MYSQL_HOST}:{settings.MYSQL_PORT}/{settings.MYSQL_DATABASE}"
-    )
-    return create_engine(connection_string, pool_pre_ping=True, pool_recycle=3600)
+    """获取数据库引擎，自动创建数据库如果不存在"""
+    try:
+        # 先尝试连接数据库
+        connection_string = (
+            f"mysql+mysqlconnector://{settings.MYSQL_USER}:{settings.MYSQL_PASSWORD}"
+            f"@{settings.MYSQL_HOST}:{settings.MYSQL_PORT}/{settings.MYSQL_DATABASE}"
+        )
+        return create_engine(connection_string, pool_pre_ping=True, pool_recycle=3600)
+    except Exception as e:
+        logger.warning(f"连接数据库失败: {e}")
+        logger.info("尝试创建数据库...")
+        
+        # 连接到MySQL但不指定数据库
+        temp_connection_string = (
+            f"mysql+mysqlconnector://{settings.MYSQL_USER}:{settings.MYSQL_PASSWORD}"
+            f"@{settings.MYSQL_HOST}:{settings.MYSQL_PORT}/"
+        )
+        
+        temp_engine = create_engine(temp_connection_string)
+        
+        # 创建数据库
+        with temp_engine.connect() as conn:
+            conn.execute(f"CREATE DATABASE IF NOT EXISTS {settings.MYSQL_DATABASE} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;")
+            conn.execute(f"USE {settings.MYSQL_DATABASE};")
+        
+        logger.info(f"数据库 {settings.MYSQL_DATABASE} 创建成功")
+        
+        # 返回正常连接引擎
+        return create_engine(connection_string, pool_pre_ping=True, pool_recycle=3600)
 
 engine = get_db_engine()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

@@ -1,8 +1,12 @@
-# 核心框架
-langchain==0.1.0
-langchain-community==0.0.10
-langchain-openai==0.0.2
-openai==1.6.1
+# 核心依赖
+langchain>=0.1.0,<0.2.0
+langchain-community>=0.0.10,<0.1.0
+langchain-text-splitters>=0.0.1,<0.1.0
+langchain-chroma>=0.1.0,<0.2.0
+langchain-openai>=0.1.0,<0.2.0
+
+# OpenAI相关 - 使用兼容版本
+openai>=1.10.0,<2.0.0  # 这是langchain-openai要求的版本
 
 # Web框架
 fastapi==0.104.1

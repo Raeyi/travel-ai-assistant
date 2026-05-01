@@ -10,11 +10,16 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "旅游AI客服系统"
     VERSION: str = "1.0.0"
     DEBUG: bool = True
+
+    # DeepSeek配置
+    DEEPSEEK_API_KEY: str = os.getenv("DEEPSEEK_API_KEY")
+    DEEPSEEK_BASE_URL: str = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+    DEEPSEEK_MODEL: str = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
     
-    # OpenAI配置
-    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY")
-    OPENAI_BASE_URL: Optional[str] = os.getenv("OPENAI_BASE_URL")
-    OPENAI_MODEL: str = "gpt-4-1106-preview"
+    # 向后兼容的OpenAI配置（使用DeepSeek的值）
+    OPENAI_API_KEY: str = os.getenv("DEEPSEEK_API_KEY")
+    OPENAI_BASE_URL: Optional[str] = os.getenv("DEEPSEEK_BASE_URL")
+    OPENAI_MODEL: str = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
     
     # 数据库配置
     MYSQL_HOST: str = os.getenv("MYSQL_HOST", "localhost")

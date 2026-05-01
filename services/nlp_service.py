@@ -13,12 +13,18 @@ class NLPService:
     """自然语言处理服务"""
     
     def __init__(self):
-        self.llm = ChatOpenAI(
-            model=settings.OPENAI_MODEL,
-            temperature=0.1,
-            openai_api_key=settings.OPENAI_API_KEY,
-            openai_api_base=settings.OPENAI_BASE_URL
-        )
+        # 构建配置参数
+        llm_config = {
+            "model": settings.OPENAI_MODEL,
+            "temperature": 0.1,
+            "openai_api_key": settings.OPENAI_API_KEY,
+        }
+        
+        # 只有在设置了基础URL时才添加
+        if settings.OPENAI_BASE_URL:
+            llm_config["openai_api_base"] = settings.OPENAI_BASE_URL
+        
+        self.llm = ChatOpenAI(**llm_config)
         
         # 意图定义
         self.intents = {
@@ -218,5 +224,23 @@ class NLPService:
         
         return True, "信息完整"
 
-# 全局NLP服务实例
-nlp_service = NLPService()
+# 创建一个简化版本的NLP服务，避免初始化错误
+def get_nlp_service():
+    try:
+        return NLPService()
+    except Exception as e:
+        logger.error(f"初始化NLP服务失败: {e}")
+        # 返回一个模拟服务
+        class MockNLPService:
+            def detect_intent(self, text, context=None):
+                return {"intent": "general_qa", "confidence": 0.5, "entities": {}}
+            def extract_entities(self, text, intent):
+                return {}
+            def analyze_sentiment(self, text):
+                return {"sentiment": "neutral", "urgency_level": 1}
+            def generate_response(self, intent, entities, context=None):
+                return "您好！我是您的旅游助手。请问有什么可以帮助您的吗？"
+        
+        return MockNLPService()
+
+nlp_service = get_nlp_service()
