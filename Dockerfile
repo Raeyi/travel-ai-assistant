@@ -17,10 +17,8 @@ RUN apt-get update && apt-get install -y \
     libxext6 \
     && rm -rf /var/lib/apt/lists/*
 
-# 复制依赖文件
+# 复制依赖文件并安装
 COPY requirements.txt .
-
-# 安装Python依赖
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 复制应用程序代码

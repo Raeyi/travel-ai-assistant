@@ -159,31 +159,65 @@ npm run dev
 
 ## 📦 Docker部署
 
+### 前置准备
+
+确保已创建 `.env` 文件并配置好必要的环境变量：
+
+```bash
+cp .env.example .env
+# 编辑 .env，设置 OPENAI_API_KEY 等配置
+```
+
+### 服务架构
+
+Docker Compose 启动以下 4 个服务：
+
+|| 服务 | 端口 | 说明 |
+||:-----|:-----|:-----|
+|| mysql | 3306 | MySQL 8.0 数据库 |
+|| redis | 6379 | Redis 7 缓存 |
+|| app | 8000 | FastAPI 后端 |
+|| frontend | 3000 | Vue 3 前端（Nginx 托管） |
+
 ### 使用 Docker Compose（推荐）
 
 ```bash
-# 启动所有服务
-docker-compose up -d
+# 构建并启动所有服务
+docker-compose up -d --build
 
 # 查看日志
 docker-compose logs -f
 
+# 查看某个服务日志
+docker-compose logs -f app
+
 # 停止服务
 docker-compose down
 
-# 停止并清理数据
+# 停止并清理数据卷
 docker-compose down -v
 ```
 
-### 构建自定义镜像
+启动后访问：
+- 前端：http://localhost:3000
+- 后端 API：http://localhost:8000
+- API 文档：http://localhost:8000/docs
+
+### 仅构建后端镜像
 
 ```bash
 # 构建镜像
 docker build -t travel-ai-assistant .
 
-# 运行容器
+# 运行容器（需自行配置数据库和Redis）
 docker run -p 8000:8000 --env-file .env travel-ai-assistant
 ```
+
+### 注意事项
+
+- `.dockerignore` 已排除 `travel_env/`、`node_modules/`、`.git/` 等不必要的文件
+- 前端通过 Nginx 托管，API 请求自动代理到后端（`/api/*` → `app:8000/*`）
+- 数据库和 Redis 数据使用 Docker Volume 持久化
 
 ---
 
@@ -390,12 +424,15 @@ travel-ai-assistant/
 │   │   ├── router/               # 路由配置
 │   │   ├── stores/               # Pinia状态管理
 │   │   └── views/                # 页面视图
+│   ├── Dockerfile                # 前端Docker镜像配置
+│   ├── nginx.conf                # Nginx配置
 │   ├── package.json              # 前端依赖配置
 │   └── vite.config.ts            # Vite构建配置
 ├── uploads/                      # 文件上传目录
 ├── data/                         # 数据目录
-├── Dockerfile                    # Docker镜像配置
+├── Dockerfile                    # 后端Docker镜像配置
 ├── docker-compose.yml            # Docker Compose配置
+├── .dockerignore                 # Docker构建排除文件
 ├── requirements.txt              # Python依赖
 ├── .env.example                  # 环境变量示例
 ├── main.py                       # 应用入口点
@@ -558,7 +595,7 @@ def test_health_check():
 
 - 🐛 问题反馈：[GitHub Issues](https://github.com/Raeyi/travel-ai-assistant/issues)
 - 💡 功能请求：[GitHub Discussions](https://github.com/Raeyi/travel-ai-assistant/discussions)
-- 📧 邮件联系：contact@example.com
+- 📧 邮件联系：<surrayi@163.com>
 
 ---
 
